@@ -43,30 +43,23 @@
             var parse_tree;
             var formatted_html;
 
-            // generate parse tree via parsing the raw_string COMMENTED SO WE CAN TEST
-            //parse_tree = parse_eq_text(raw_string);
-            //parse_tree = parse_eq_text("\\frac{+{1}{x}}{y}");
-            //parse_tree = ["=",["+","1","x"],"y"];
-            //A test case : (x - y) * 5
-            //parse_tree = ["=",["_","x","i"],["\\frac",["+","n","1"],["+","n",["-","1","i"]]]]; //returns a proper expression
-            //parse_tree = ["_"]; //raises a MALFORMED EXPRESSION exception
-            //parse_tree = ["\\paren",["+","3","4"],"5"]
-            parse_tree = parse_eq_text(raw_string);
-
-            /* 
-                replace equations in parse tree with formatted html   
-                    I recommend creating a method that accepts an equation object, 
-                    i.e. convert_eq(['x','eq1','eq2']) 
-            */
-
             /*
                 the ultimate goal is to have a method that returns the html string
                 or jquery 
             */
+            
             try
             {
+                // generate parse tree via parsing the raw_string COMMENTED SO WE CAN TEST
+                parse_tree = parse_eq_text(raw_string);
                 //if we have an array access error or one of our exceptions is thrown,
                 //this means that the equation was improperly formed.
+                
+                /* 
+                replace equations in parse tree with formatted html   
+                    I recommend creating a method that accepts an equation object, 
+                    i.e. convert_eq(['x','eq1','eq2']) 
+                */
                 formatted_html = convert_eq(parse_tree);
             }
             catch(exc)
@@ -77,8 +70,8 @@
             }
             // replace the text of the current 'Math_eq'
             // commented out for now until you get the functionality in place
-            $(this).html(formatted_html)
-        };
+            $(this).html(formatted_html);
+        }
 
         // parse text into equation object 
         function parse_eq_text(equation_text) {
@@ -118,7 +111,18 @@
 			                        rightSubExpression = equation_text.substring(i + subExpressionLength + 1, equation_text.length-1);
 			                        console.log("Right: " + rightSubExpression);
 			                        rightTree = parse_eq_text(rightSubExpression);
+                                    theTree = [root, leftTree, rightTree];
+                                    console.log(theTree);
+                                    return theTree;
 			                    }
+                                else
+                                {
+                                console.log(i+subExpressionLength);
+                                console.log(equation_text.length);
+                                    if(i+subExpressionLength != equation_text.length) throw "INCORRECT PARENTHESES PARAMETERS";
+                                    theTree = [root, leftTree];
+                                    return theTree;
+                                }
                                 break;
 			                }
 			            }
@@ -131,9 +135,7 @@
 			                subExpressionLength++;
 			            }
 			        }
-			        theTree = [root, leftTree, rightTree];
-			        console.log(theTree);
-			        return theTree;
+			        
 			    }
 			}
 			return equation_text;
@@ -234,22 +236,29 @@
 
 
         // once the page is loaded
-        $(document).ready(function () {
+       $(document).ready(function () {
 
             // this individually calls Format equation for each of the 
             // Html tags with class "Math_eq"
-            $('.Math_eq').Format_equation();
-
+            $('.Math_eq').each(function ()
+            {
+                $(this).Format_equation();
+            });
         });
+       
     </script>
 </head>
 
 <body>
+
+    <div class="Math_eq">\paren{+{1}{2}} </div>
+    <br/>
+    
     <div class="Math_eq">={ _{x}{i} }{\frac {+{n}{1}}{+{n}{-{ 1 }{ i }}}}</div>
-
-
+    
     <br/>should be identical to:
     <br/>
+    
 
 
     <div class="Sample_equation">x<sub>i</sub> =
