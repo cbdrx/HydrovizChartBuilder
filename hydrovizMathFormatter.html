@@ -45,11 +45,13 @@
 
             // generate parse tree via parsing the raw_string COMMENTED SO WE CAN TEST
             //parse_tree = parse_eq_text(raw_string);
-            parse_eq_text("={+{1}{x}}");
+            //parse_tree = parse_eq_text("\\frac{+{1}{x}}{y}");
+            //parse_tree = ["=",["+","1","x"],"y"];
             //A test case : (x - y) * 5
-            parse_tree = ["=",["_","x","i"],["\\frac",["+","n","1"],["+","n",["-","1","i"]]]]; //returns a proper expression
+            //parse_tree = ["=",["_","x","i"],["\\frac",["+","n","1"],["+","n",["-","1","i"]]]]; //returns a proper expression
             //parse_tree = ["_"]; //raises a MALFORMED EXPRESSION exception
             //parse_tree = ["\\paren",["+","3","4"],"5"]
+            parse_tree = parse_eq_text(raw_string);
 
             /* 
                 replace equations in parse tree with formatted html   
@@ -72,7 +74,7 @@
                 console.log(exc);
                 formatted_html = "INVALID EXPRESSION : " + exc;
                 
-            }    
+            }
             // replace the text of the current 'Math_eq'
             // commented out for now until you get the functionality in place
             $(this).html(formatted_html)
@@ -81,19 +83,60 @@
         // parse text into equation object 
         function parse_eq_text(equation_text) {
             // this method is intended to return a single equation object
-			var equationParts, i;
+            var equationPart, theTree, i, counter, leftSubExpression,
+                rightSubExpression, subExpressionLength, leftTree, rightTree,
+                root;
+
+            theTree = [];
 		
-			equationParts = equation_text.trim().split("{");
-			
-			for(i = 0; i < equationParts.length; i+= 1)
+            if (equation_text[0] == "{") throw "OUTER PARENTHESES NOT ALLOWED";
+
+            equation_text = equation_text.replace(" ", "");
+            
+            i = 0;
+			for(i=0; i<equation_text.length; i++)
 			{
-				console.log(equationParts[i]);
-				equationParts[i].replace("}","");
-				equationParts[i].replace(" ","");
-				equationParts[i].replace(" ","");
+			    if(equation_text[i] == "{")
+			    {
+			        root = equation_text.substring(0, i);
+			        console.log("ROOT: " + root);
+			        counter = 1;
+			        subExpressionLength = 1;
+			        while(counter != 0)
+			        {
+			            if(equation_text[i+subExpressionLength] == "}")
+			            {
+			                counter--;
+			                subExpressionLength++;
+			                if (counter == 0)
+			                {
+			                    leftSubExpression = equation_text.substring(i + 1, i + subExpressionLength-1);
+			                    console.log("LEFT: " + leftSubExpression);
+			                    leftTree = parse_eq_text(leftSubExpression);
+			                    if (root != "\\paren")
+			                    {
+			                        rightSubExpression = equation_text.substring(i + subExpressionLength + 1, equation_text.length-1);
+			                        console.log("Right: " + rightSubExpression);
+			                        rightTree = parse_eq_text(rightSubExpression);
+			                    }
+                                break;
+			                }
+			            }
+			            else if (equation_text[i + subExpressionLength] == "{") {
+			                counter++;
+			                subExpressionLength++;
+			            }
+			            else
+			            {
+			                subExpressionLength++;
+			            }
+			        }
+			        theTree = [root, leftTree, rightTree];
+			        console.log(theTree);
+			        return theTree;
+			    }
 			}
-			
-            return false;
+			return equation_text;
         }
 
 
